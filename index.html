@@ -1,47 +1,66 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pikachu Memory Match</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- 🌌 Menu chính sẽ được tạo bằng JavaScript (mainmenu.js) -->
-
-  <!-- ⚙️ Menu cài đặt độ khó -->
-  <div id="difficulty-overlay" class="overlay" style="display: none;">
-    <div class="modal">
-      <h2>Chọn chế độ chơi</h2>
-      <div class="difficulty-buttons">
-        <button class="difficulty-btn" data-level="1">Dễ</button>
-        <button class="difficulty-btn" data-level="4">Bình thường</button>
-        <button class="difficulty-btn" data-level="12">Khó</button>
-      </div>
-      <button onclick="closeDifficultyOverlay()">❌ Hủy</button>
-    </div>
-  </div>
-
-  <!-- 🎮 Vùng chơi game -->
+  <!-- Game wrapper -->
   <div class="main-wrapper">
     <div id="game-container" style="display: none;">
-      <!-- Thông tin tiêu đề game -->
       <div id="game-title">
         <button id="btn-restart">🔄 Bắt đầu lại</button>
         <button id="btn-hint">💡 Gợi ý</button>
-        <span id="hint">💡 Gợi ý: 30</span>
+        <span id="hint">💡30</span>
         <span id="game-logo">🎮 Pikachu Memory Match V1.0</span>
-        <span id="timer">⏱️ 00:00</span>
+        <span id="timer">⏱️ 10:00</span>
         <span id="score-title">⭐ Điểm: <span id="score">0</span></span>
-        <span id="current-level">Level:<span id="level">1</span></span>
+        <span id="current-level">Level: <span id="level">1</span></span>
       </div>
-
-      <!-- Lưới ô hình -->
       <div id="grid-container"></div>
     </div>
   </div>
 
-  <!-- 📦 Import các module JS -->
+  <!-- Cài đặt -->
+  <div id="settings-container" style="display: none;">
+    <h2 class="settings-title">⚙️ Cài đặt</h2>
+
+    <!-- Bật/tắt âm -->
+    <div class="settings-option center-option">
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle-sound" checked />
+        <span class="slider"></span>
+      </label>
+      <span class="label"> 🔊 Âm thanh</span>
+    </div>
+
+    <!-- Nhạc menu -->
+    <div class="settings-group">
+      <h3>🎵 Nhạc Menu</h3>
+      <label><input type="radio" name="menu-music" value="menu1.mp3" /> Menu 1</label>
+      <label><input type="radio" name="menu-music" value="menu2.mp3" /> Menu 2</label>
+     
+
+    </div>
+
+    <!-- Nhạc game -->
+    <div class="settings-group">
+      <h3>🎶 Nhạc Nền Game</h3>
+      <label><input type="radio" name="game-music" value="bg1.mp3" /> Game 1</label>
+      <label><input type="radio" name="game-music" value="bg2.mp3" /> Game 2</label>
+
+
+    </div>
+ <!-- 🎧 Audio player -->
+ <audio id="bg-music" loop></audio>
+    <div class="center-option">
+      <button id="btn-back-menu" class="back-menu-btn">🔙 Quay về Menu</button>
+    </div>
+  </div>
+  <!-- Scripts -->
   <script type="module" src="js/utils.js"></script>
   <script type="module" src="js/gameState.js"></script>
   <script type="module" src="js/ui.js"></script>
@@ -49,21 +68,7 @@
   <script type="module" src="js/logic.js"></script>
   <script type="module" src="js/main.js"></script>
   <script type="module" src="js/mainmenu.js"></script>
+  <script type="module" src="js/settings.js"></script>
   <script type="module" src="js/bonusTile.js"></script>
 </body>
 </html>
-<!--âm thanh-->
-<div id="settings-container" style="display: none;">
-  <h2 class="settings-title">Cài đặt</h2>
-
-  <div class="settings-option center-option">
-    <label class="toggle-switch">
-      <input type="checkbox" id="toggle-sound" checked>
-      <span class="slider"></span>
-      <span class="label">Âm thanh</span>
-    </label>
-  </div>
-
-  <button id="btn-back-menu" class="settings-btn back-menu-btn">🔙 Quay về menu chính</button>
-</div>
-

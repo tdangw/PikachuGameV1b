@@ -45,7 +45,7 @@ export function createMainMenu() {
       action: () => {
         document.body.removeChild(menuOverlay);
         showInfoModal(
-          'Hướng dẫn',
+          '⚡Hướng dẫn',
           '🎯 Ghép các cặp hình giống nhau để ghi điểm.\n🎁 Click đúng ô lẻ để nhận thưởng!'
         );
       },
@@ -55,8 +55,8 @@ export function createMainMenu() {
       action: () => {
         document.body.removeChild(menuOverlay);
         showInfoModal(
-          'Thông tin game',
-          'Pikachu Memory Match V1.0\nTác giả: Bạn & ChatGPT 🤖'
+          '📜Thông tin game',
+          '🎴Pikachu Memory Match V1.0<br>✨Tác giả: Đăng & 🤖'
         );
       },
     },
@@ -80,6 +80,14 @@ export function createMainMenu() {
 }
 
 function showDifficultyOverlay() {
+  const audio = document.getElementById('bg-music');
+  if (gameState.settings.sound && gameState.settings.menuMusic) {
+    audio.src = `assets/sounds/${gameState.settings.menuMusic}`;
+    audio.loop = true;
+    audio.volume = 0.5;
+    audio.play().catch((err) => console.warn('Không thể phát nhạc menu:', err));
+  }
+
   const overlay = document.createElement('div');
   overlay.className = 'overlay fade-in';
 
@@ -144,7 +152,7 @@ function showInfoModal(title, message) {
   h2.textContent = title;
 
   const p = document.createElement('p');
-  p.textContent = message;
+  p.innerHTML = message;
 
   const closeBtn = document.createElement('button');
   closeBtn.className = 'settings-btn';
@@ -157,6 +165,19 @@ function showInfoModal(title, message) {
     setTimeout(() => {
       document.body.removeChild(overlay);
       createMainMenu();
+      const audio = document.getElementById('bg-music');
+      if (
+        audio &&
+        gameState.settings?.sound &&
+        gameState.settings.menuMusic !== 'none'
+      ) {
+        audio.src = `assets/sounds/${gameState.settings.menuMusic}`;
+        audio.loop = true;
+        audio.volume = 0.5;
+        audio
+          .play()
+          .catch((err) => console.warn('Không thể phát nhạc menu:', err));
+      }
     }, 300);
   };
 

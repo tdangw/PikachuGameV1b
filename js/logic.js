@@ -1,14 +1,13 @@
-// logic.js - Xử lý click và logic kiểm tra ghép hình
-
 import { increaseScore, gameState } from './gameState.js';
 import { showBonusOverlay, updateScoreDisplay } from './ui.js';
 import { nextLevel } from './main.js';
 
 let selectedTiles = [];
 
-/**
- * Gắn sự kiện click cho tất cả tile sau khi render
- */
+const soundClick = new Audio('assets/sounds/click.mp3');
+const soundMatch = new Audio('assets/sounds/match.mp3');
+const soundWrong = new Audio('assets/sounds/wrong.mp3');
+
 export function initLogic() {
   const tiles = document.querySelectorAll('.tile');
   tiles.forEach((tile) => {
@@ -17,7 +16,7 @@ export function initLogic() {
 }
 
 /**
- * Xử lý khi người chơi click 1 ô
+ * Xử lý khi người chơi click vào tile
  */
 export function handleTileClick(tileElement) {
   if (gameState.currentLevel > 1 && gameState.isLocked) return;
@@ -26,6 +25,7 @@ export function handleTileClick(tileElement) {
   const imageId = tileElement.dataset.imageId;
   const img = tileElement.querySelector('img');
 
+  // Ngăn double click hoặc click trùng
   if (
     tileElement.classList.contains('matched') ||
     tileElement.classList.contains('selected') ||
@@ -33,33 +33,32 @@ export function handleTileClick(tileElement) {
   )
     return;
 
-  // Hiển thị ảnh
+  // 🎵 Phát âm click nếu bật sound
+  if (gameState.settings?.sound) {
+    soundClick.currentTime = 0;
+    soundClick.play().catch(() => {});
+  }
+
   img.classList.remove('hidden');
   tileElement.classList.add('selected');
 
   if (isBonus) {
-    // 🎯 Ô lẻ → cộng điểm ngẫu nhiên, chỉ glow khi trúng
     const bonusPoints = Math.floor(Math.random() * 100) + 1;
     increaseScore(bonusPoints);
     updateScoreDisplay(gameState.score);
+    tileElement.classList.add('matched');
 
-    tileElement.classList.add('matched', 'bonus-tile'); // thêm glow khi click trúng
-
-    console.log(`[🎁 Bonus] +${bonusPoints} điểm từ tile ${tileElement.id}`);
+    console.log(`[🎁 Bonus] +${bonusPoints} điểm từ ô lẻ ${tileElement.id}`);
     showBonusOverlay(`🎯 Bạn nhận được ${bonusPoints} điểm thưởng!`);
-
     checkLevelComplete();
   } else {
-    // Ô thường → kiểm tra ghép
     selectedTiles.push({ element: tileElement, imageId });
-    if (selectedTiles.length === 2) {
-      checkMatch();
-    }
+    if (selectedTiles.length === 2) checkMatch();
   }
 }
 
 /**
- * Kiểm tra 2 ô được chọn có match không
+ * So khớp 2 tile được chọn
  */
 function checkMatch() {
   const [first, second] = selectedTiles;
@@ -71,11 +70,21 @@ function checkMatch() {
     increaseScore(20);
     updateScoreDisplay(gameState.score);
 
+    if (gameState.settings?.sound) {
+      soundMatch.currentTime = 0;
+      soundMatch.play().catch(() => {});
+    }
+
     console.log(`[✅ Match] ${first.imageId}`);
     checkLevelComplete();
   } else {
     first.element.classList.add('wrong');
     second.element.classList.add('wrong');
+
+    if (gameState.settings?.sound) {
+      soundWrong.currentTime = 0;
+      soundWrong.play().catch(() => {});
+    }
 
     setTimeout(() => {
       first.element.classList.remove('selected', 'wrong');
@@ -92,9 +101,7 @@ function checkMatch() {
 }
 
 /**
- * Kiểm tra điều kiện để qua màn:
- * - Tất cả ô thường đã matched
- * - Nếu có ô bonus thì phải matched
+ * Kiểm tra nếu đã matched hết → qua màn
  */
 export function checkLevelComplete() {
   const allNormalTiles = document.querySelectorAll(
@@ -104,17 +111,12 @@ export function checkLevelComplete() {
     '.tile.matched:not([data-is-bonus="true"])'
   );
   const bonusTile = document.querySelector('.tile[data-is-bonus="true"]');
-
   const bonusMatched = bonusTile
     ? bonusTile.classList.contains('matched')
     : true;
 
   if (allNormalTiles.length === matchedNormalTiles.length && bonusMatched) {
-    console.log(`[🚀 HOÀN THÀNH] Level ${gameState.currentLevel} hoàn tất`);
     showBonusOverlay(`🎉 Bạn đã hoàn thành Level ${gameState.currentLevel}!`);
-
-    setTimeout(() => {
-      nextLevel();
-    }, 600);
+    setTimeout(() => nextLevel(), 600);
   }
 }

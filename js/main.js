@@ -1,53 +1,104 @@
-// main.js - Xử lý chính game flow, gợi ý, khởi động level
-
 import { createGrid } from './grid.js';
 import {
   updateLevelDisplay,
   updateScoreDisplay,
   updateHintDisplay,
+  updateTimerDisplay,
   showBonusOverlay,
+  showLevelRewardOverlay,
 } from './ui.js';
 import { gameState, resetGame } from './gameState.js';
 import { applySettingsAndStartGame } from './settings.js';
 import { checkLevelComplete, initLogic } from './logic.js';
-
-// Giao diện khi load
 import { createMainMenu } from './mainmenu.js';
-window.onload = () => createMainMenu();
 
-/**
- * Khởi tạo màn chơi tương ứng với level
- */
+let countdownInterval;
+
+window.onload = () => {
+  createMainMenu();
+};
+
 export function initializeLevel(level) {
   console.log(`[🧩 INIT] Tạo lưới cho level ${level}`);
-
   gameState.currentLevel = level;
 
-  // Hiển thị container chơi game
   const gameContainer = document.getElementById('game-container');
   if (gameContainer) gameContainer.style.display = 'flex';
+
+  // ✅ Nếu remainingTime chưa có, gán mặc định 600s
+  if (typeof gameState.remainingTime !== 'number') {
+    gameState.remainingTime = 600;
+  }
 
   updateLevelDisplay(level);
   updateScoreDisplay(gameState.score);
   updateHintDisplay(gameState.hints || 0);
+  updateTimerDisplay(gameState.remainingTime);
+
+  const audio = document.getElementById('bg-music');
+  if (audio && gameState.settings?.sound && gameState.settings.bgMusic) {
+    audio.src = `assets/sounds/${gameState.settings.bgMusic}`;
+    audio.loop = true;
+    audio.volume = 0.5;
+    audio.play().catch((err) => console.warn('Không thể phát nhạc:', err));
+  }
 
   const gridSize = Math.min(level, 12);
   createGrid(gridSize);
-  initLogic(); // ✅ Gắn sự kiện click vào ô
+  initLogic();
+  startCountdown();
+
+  if (level > 1) {
+    handleLevelReward();
+  }
 }
 
-/**
- * Chuyển sang màn tiếp theo
- */
+function startCountdown() {
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    gameState.remainingTime--;
+    updateTimerDisplay(gameState.remainingTime);
+
+    if (gameState.remainingTime <= 0) {
+      clearInterval(countdownInterval);
+      handleTimeUp();
+    }
+  }, 1000);
+}
+
+function handleTimeUp() {
+  showBonusOverlay('⏰ Hết giờ! Bạn đã thua!');
+}
+
+function handleLevelReward() {
+  const level = gameState.currentLevel;
+  const remainingTime = gameState.remainingTime || 0;
+  const hintsUsed = 0;
+
+  const base = 50;
+  const levelBonus = level * 5;
+  const timeBonus = Math.floor(remainingTime / 10);
+  const hintBonus = Math.max(0, 3 - hintsUsed) * 10;
+
+  const reward = base + levelBonus + timeBonus + hintBonus;
+  const hintGain = Math.ceil(level / 2);
+
+  gameState.score += reward;
+  gameState.hints += hintGain;
+  gameState.remainingTime += 60;
+
+  updateScoreDisplay(gameState.score);
+  updateHintDisplay(gameState.hints);
+
+  showLevelRewardOverlay({ reward, hintGain, timeBonus: 60 });
+}
+
 export function nextLevel() {
   gameState.currentLevel++;
   console.log(`[📤 nextLevel()] Chuyển sang level ${gameState.currentLevel}`);
   initializeLevel(gameState.currentLevel);
 }
 
-/**
- * Tìm cặp để gợi ý khi người chơi bấm nút "Gợi ý"
- */
 function handleHintClick() {
   if (!gameState.hints || gameState.hints <= 0) {
     showBonusOverlay('🚫 Hết lượt gợi ý!');
@@ -69,9 +120,7 @@ function handleHintClick() {
   for (let imageId in tilePairs) {
     if (tilePairs[imageId].length >= 2) {
       const [t1, t2] = tilePairs[imageId];
-
       simulateTileMatch(t1, t2);
-
       gameState.hints--;
       updateHintDisplay(gameState.hints);
       return;
@@ -81,39 +130,27 @@ function handleHintClick() {
   showBonusOverlay('😕 Không tìm thấy cặp nào để gợi ý!');
 }
 
-/**
- * Gợi ý: Tự động ghép cặp 2 ô
- */
 function simulateTileMatch(tile1, tile2) {
   const img1 = tile1.querySelector('img');
   const img2 = tile2.querySelector('img');
-
   if (img1) img1.classList.remove('hidden');
   if (img2) img2.classList.remove('hidden');
-
   tile1.classList.add('matched');
   tile2.classList.add('matched');
-
   gameState.score += 20;
   updateScoreDisplay(gameState.score);
-
-  checkLevelComplete(); // ✅ kiểm tra xem đã hoàn thành màn chưa
+  checkLevelComplete();
 }
 
-/**
- * Gán sự kiện xác nhận cài đặt nếu tồn tại nút
- */
 const confirmBtn = document.getElementById('confirm-settings-btn');
 if (confirmBtn) {
   confirmBtn.onclick = () => {
     gameState.hints = 30;
+    gameState.remainingTime = 600;
     applySettingsAndStartGame();
   };
 }
 
-/**
- * Gán sự kiện nút bắt đầu lại
- */
 const restartBtn = document.getElementById('btn-restart');
 if (restartBtn) {
   restartBtn.onclick = () => {
@@ -122,9 +159,6 @@ if (restartBtn) {
   };
 }
 
-/**
- * Gán sự kiện nút gợi ý
- */
 const hintBtn = document.getElementById('btn-hint');
 if (hintBtn) {
   hintBtn.onclick = handleHintClick;

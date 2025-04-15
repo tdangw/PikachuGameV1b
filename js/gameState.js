@@ -1,4 +1,5 @@
 // 📦 Trạng thái toàn cục của game
+
 export const gameState = {
   currentLevel: 1, // Level hiện tại
   score: 0, // Tổng điểm người chơi

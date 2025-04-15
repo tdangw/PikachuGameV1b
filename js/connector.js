@@ -1,7 +1,7 @@
 // connector.js - Kết nối màn hình menu với game
 
 import { resetGame, gameState } from './gameState.js';
-import { createGrid } from './grid.js';
+// import { createGrid } from './grid.js';
 import {
   showGameUI,
   showMainMenu,

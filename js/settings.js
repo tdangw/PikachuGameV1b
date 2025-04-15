@@ -1,103 +1,114 @@
 import { initializeLevel } from './main.js';
 import { gameState } from './gameState.js';
+import { createMainMenu } from './mainmenu.js';
 
 const settingsContainer = document.getElementById('settings-container');
 const menuContainer = document.getElementById('menu-container');
+const audio = document.getElementById('bg-music');
 
-// Tạo thuộc tính settings nếu chưa có
+// ⚙️ Cài đặt mặc định
 if (!gameState.settings) {
   gameState.settings = {
-    mode: 'easy', // dự phòng
-    sound: true, // sẽ dùng cho bật/tắt âm thanh
+    mode: 'easy',
   };
 }
 
 /**
- * Hiển thị giao diện Cài đặt (dành cho ⚙️ menu)
+ * Hiển thị bảng cài đặt và đồng bộ giao diện với gameState
  */
 export function showSettingsPanel() {
   settingsContainer.style.display = 'block';
-  if (menuContainer) menuContainer.style.display = 'none';
+  if (menuContainer) menuContainer.style.display = 'none'; // Ẩn menu chính
 
-  // Cập nhật trạng thái checkbox âm thanh
-  const toggleSound = document.getElementById('toggle-sound');
-  if (toggleSound) {
-    toggleSound.checked = gameState.settings.sound;
-    toggleSound.onchange = () => {
-      gameState.settings.sound = toggleSound.checked;
+  // Toggle âm thanh
+  const toggle = document.getElementById('toggle-sound');
+  if (toggle) {
+    toggle.checked = gameState.settings.sound;
+    toggle.onchange = () => {
+      gameState.settings.sound = toggle.checked;
+      if (!toggle.checked && audio) {
+        audio.pause();
+      } else {
+        // Nếu đã chọn nhạc → play lại
+        const selected = document.querySelector(
+          'input[name="menu-music"]:checked'
+        );
+        if (selected && selected.value !== 'none') {
+          playMusic(`assets/sounds/${selected.value}`); // Phát nhạc menu
+        }
+      }
     };
   }
+
+  // Gán radio đã chọn (Menu Music)
+  document.querySelectorAll('input[name="menu-music"]').forEach((radio) => {
+    radio.checked = radio.value === gameState.settings.menuMusic;
+    radio.onchange = () => {
+      gameState.settings.menuMusic = radio.value;
+      if (gameState.settings.sound && radio.value !== 'none') {
+        playMusic(`assets/sounds/${radio.value}`);
+      } else {
+        audio.pause();
+      }
+    };
+  });
+
+  // Gán radio đã chọn (BG Music)
+  document.querySelectorAll('input[name="game-music"]').forEach((radio) => {
+    radio.checked = radio.value === gameState.settings.bgMusic;
+    radio.onchange = () => {
+      gameState.settings.bgMusic = radio.value;
+      if (gameState.settings.sound && radio.value !== 'none') {
+        playMusic(`assets/sounds/${radio.value}`);
+      } else {
+        audio.pause();
+      }
+    };
+  });
+
+  // Nếu vẫn còn chọn độ khó theo radio
+  document.querySelectorAll('input[name="mode"]').forEach((radio) => {
+    radio.checked = radio.value === gameState.settings.mode;
+  });
 }
 
 /**
- * Dùng cho hệ thống chọn chế độ chơi cũ (menu Bắt đầu cũ)
- * Nếu vẫn dùng hệ thống chọn độ khó dạng radio
- */
-export function showSettings() {
-  settingsContainer.style.display = 'block';
-  if (menuContainer) menuContainer.style.display = 'none';
-
-  // Gán radio tương ứng đã chọn
-  const selectedMode = gameState.settings.mode;
-  const input = document.querySelector(
-    `input[name="mode"][value="${selectedMode}"]`
-  );
-  if (input) input.checked = true;
-}
-
-/**
- * Xác nhận lựa chọn từ menu "Chế độ" (dùng nếu giữ lại hệ thống cũ)
+ * Nếu dùng confirm-settings-btn
  */
 export function applySettingsAndStartGame() {
-  const selectedMode = document.querySelector(
-    'input[name="mode"]:checked'
-  )?.value;
-  gameState.settings.mode = selectedMode || 'easy';
+  const selectedMode =
+    document.querySelector('input[name="mode"]:checked')?.value || 'easy';
+  gameState.settings.mode = selectedMode;
 
-  // Gán level tương ứng với mode
-  switch (selectedMode) {
-    case 'easy':
-      initializeLevel(1);
-      break;
-    case 'normal':
-      initializeLevel(4);
-      break;
-    case 'hard':
-      initializeLevel(12);
-      break;
-    default:
-      initializeLevel(1);
-  }
+  let level = 1;
+  if (selectedMode === 'normal') level = 4;
+  else if (selectedMode === 'hard') level = 12;
 
-  // Ẩn menu cài đặt
+  initializeLevel(level);
   settingsContainer.style.display = 'none';
   document.getElementById('game-container').style.display = 'flex';
 }
 
-// Gán sự kiện nút "Bắt đầu" nếu dùng hệ thống radio cũ
-const confirmBtn = document.getElementById('confirm-settings-btn');
-if (confirmBtn) {
-  confirmBtn.onclick = () => {
-    applySettingsAndStartGame();
-  };
-}
-import { createMainMenu } from './mainmenu.js';
-
-// Gán toggle âm thanh
-const toggleSound = document.getElementById('toggle-sound');
-if (toggleSound) {
-  toggleSound.checked = gameState.settings.sound ?? true;
-  toggleSound.onchange = () => {
-    gameState.settings.sound = toggleSound.checked;
-    console.log('Âm thanh:', toggleSound.checked ? 'BẬT' : 'TẮT');
-  };
+/**
+ * Phát nhạc theo file
+ */
+function playMusic(src) {
+  if (!audio) return;
+  audio.src = src;
+  audio.loop = true;
+  audio.volume = 0.5;
+  audio.play().catch((err) => {
+    console.warn('🔇 Không thể phát nhạc:', err);
+  });
 }
 
-// Quay về menu
+/**
+ * Nút quay về menu chính
+ */
 const backBtn = document.getElementById('btn-back-menu');
 if (backBtn) {
   backBtn.onclick = () => {
-    document.getElementById('settings-container').style.display = 'none';
+    settingsContainer.style.display = 'none';
     createMainMenu();
   };
 }
