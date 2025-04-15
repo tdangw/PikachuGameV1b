@@ -1,0 +1,341 @@
+/* 🌟 Pikachu Memory Match - CSS Tổng thể */
+
+/* === Layout toàn trang === */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* === Wrapper chính chứa game === */
+.main-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* === Game Container === */
+#game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #e9ecef;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+  margin-top: 30px;
+  max-width: 95vw;
+}
+
+/* === Game Header === */
+#game-title {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 20px;
+  background-color: #fff;
+  width: 100%;
+  max-width: 1080px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+#game-title span,
+#game-title button {
+  font-size: 1rem;
+  white-space: nowrap;
+  margin: 5px 10px;
+}
+
+/* === Nút chung === */
+button {
+  padding: 10px 16px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+button:hover,
+.menu-item:hover,
+.difficulty-btn:hover,
+.back-menu-btn:hover {
+  transform: scale(1.05);
+}
+button:active {
+  transform: scale(0.95);
+}
+
+/* === Lưới game === */
+#grid-container {
+  display: grid;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  background-color: #adc3d9;
+  padding: 10px;
+  border-radius: 12px;
+  width: 90vmin;
+  height: 90vmin;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* === Tile ô hình === */
+.tile {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #fff;
+  border-radius: 8px;
+  transition: transform 0.2s ease, border 0.2s ease;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border: 3px solid transparent;
+}
+.tile:hover {
+  opacity: 0.95;
+}
+.tile img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.tile img.hidden {
+  display: none;
+}
+
+/* ✅ Ghép đúng */
+.tile.matched {
+  opacity: 0.5;
+  pointer-events: none;
+  border-color: #28a745;
+  box-shadow: 0 0 8px #28a74599;
+}
+
+/* ❌ Ghép sai */
+.tile.wrong {
+  animation: shake 0.5s;
+  border-color: #dc3545;
+  box-shadow: 0 0 6px #dc354599;
+}
+
+/* 🎯 Ô lẻ glowing */
+.tile.bonus-tile {
+  border: 2px dashed #ffd700;
+  box-shadow: 0 0 12px #ffce00cc, 0 0 6px #ff9800cc;
+  animation: glowPulse 1.2s ease-in-out infinite;
+}
+
+/* Level 1 ô duy nhất */
+.tile.single-tile {
+  max-width: 240px;
+  margin: auto;
+  box-shadow: 0 0 12px #ffd700cc, 0 0 6px #ffa500cc;
+}
+
+/* === Modal & Overlay === */
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.4s ease-in-out;
+}
+.modal {
+  background-color: #fff;
+  padding: 24px 32px;
+  border-radius: 12px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  animation: dropIn 0.4s ease;
+}
+.modal h2 {
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+}
+.modal p {
+  margin-bottom: 20px;
+}
+.modal button {
+  background-color: #4CAF50;
+  border-radius: 6px;
+}
+.modal button:hover {
+  background-color: #45a049;
+}
+
+/* === Menu chính === */
+.menu-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(0,0,0,0.6), rgba(0,0,0,0.8));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.5s ease-in-out;
+}
+.game-title {
+  font-size: 2.5rem;
+  color: #fff;
+  text-shadow: 2px 2px 4px #000;
+  margin-bottom: 30px;
+}
+.menu-list {
+  list-style: none;
+  padding: 0;
+}
+.menu-item {
+  font-size: 1.4rem;
+  padding: 14px 28px;
+  margin: 10px;
+  background-color: #1e90ff;
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.menu-item:hover {
+  background-color: #00bfff;
+  text-shadow: 1px 1px 3px #000;
+}
+
+/* === Cài đặt nâng cao === */
+.difficulty-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+.difficulty-btn {
+  padding: 12px 20px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  background-color: #1e90ff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.toggle-switch input {
+  display: none;
+}
+.toggle-switch .slider {
+  width: 50px;
+  height: 26px;
+  background-color: #ccc;
+  border-radius: 34px;
+  position: relative;
+  transition: background-color 0.3s;
+  margin-right: 10px;
+}
+.toggle-switch .slider::before {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  left: 2px;
+  top: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+.toggle-switch input:checked + .slider {
+  background-color: #4CAF50;
+}
+.toggle-switch input:checked + .slider::before {
+  transform: translateX(24px);
+}
+.toggle-switch .label {
+  font-size: 1.1rem;
+  user-select: none;
+}
+
+.center-option {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.back-menu-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 12px 24px;
+  font-size: 1.1em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.back-menu-btn:hover {
+  background-color: #5a6268;
+}
+
+/* === Hiệu ứng animation === */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes dropIn {
+  0%   { opacity: 0; transform: translateY(-30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 8px #ffce00aa; }
+  50% { box-shadow: 0 0 16px #ff9800ff; }
+  100% { box-shadow: 0 0 8px #ffce00aa; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-20px); }
+}
